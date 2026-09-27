@@ -1,0 +1,23 @@
+# NLIC Connect local secrets
+backend/src/main/resources/application.properties
+.env
+.env.*
+!.env.example
+
+# Backend build output
+backend/target/
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+
+# IDE files
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
