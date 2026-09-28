@@ -3,6 +3,10 @@ package org.nlic.connect.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * Represents an available volunteer opportunity offered to members.
+ * Each record includes scheduling, location, and participation details.
+ */
 @Entity
 @Table(name = "volunteer_opportunities")
 public class VolunteerOpportunity {

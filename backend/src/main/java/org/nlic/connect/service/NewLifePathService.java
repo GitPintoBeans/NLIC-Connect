@@ -9,12 +9,21 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Provides business logic for managing New Life Path steps and user progress.
+ */
 @Service
 public class NewLifePathService {
 
     private final NewLifePathStepRepository stepRepository;
     private final NewLifePathProgressRepository progressRepository;
 
+    /**
+     * Creates the service with the required step and progress repositories.
+     *
+     * @param stepRepository repository used to manage New Life Path steps
+     * @param progressRepository repository used to track user progress
+     */
     public NewLifePathService(
             NewLifePathStepRepository stepRepository,
             NewLifePathProgressRepository progressRepository) {
@@ -23,14 +32,32 @@ public class NewLifePathService {
         this.progressRepository = progressRepository;
     }
 
+    /**
+     * Retrieves all active steps in their configured order.
+     *
+     * @return the available active steps
+     */
     public List<NewLifePathStep> getActiveSteps() {
         return stepRepository.findByActiveTrueOrderByStepOrderAsc();
     }
 
+    /**
+     * Retrieves the progress history for a specific user.
+     *
+     * @param userId the identifier of the user
+     * @return the user's New Life Path progress entries
+     */
     public List<NewLifePathProgress> getUserProgress(Long userId) {
         return progressRepository.findByUserId(userId);
     }
 
+    /**
+     * Marks a step as completed for the given user.
+     *
+     * @param userId the identifier of the user
+     * @param stepId the identifier of the step to complete
+     * @return the saved progress record showing completion
+     */
     public NewLifePathProgress completeStep(Long userId, Long stepId) {
 
         // Verify that the requested step actually exists.

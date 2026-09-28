@@ -3,6 +3,10 @@ package org.nlic.connect.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * Represents a volunteer's signup for a specific opportunity.
+ * Tracks the user, opportunity, status, and any optional notes.
+ */
 @Entity
 @Table(name = "volunteer_signups")
 public class VolunteerSignup {

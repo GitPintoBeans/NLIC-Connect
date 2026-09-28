@@ -3,6 +3,10 @@ package org.nlic.connect.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
+/**
+ * Represents a user's progress for a single New Life Path step.
+ * Each record tracks the user, the step, completion status, and any optional notes.
+ */
 @Entity
 @Table(
     name = "new_life_path_progress",

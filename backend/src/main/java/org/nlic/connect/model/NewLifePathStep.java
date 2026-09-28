@@ -3,6 +3,10 @@ package org.nlic.connect.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * Represents a single step in the New Life Path journey.
+ * Each step contains the title, description, ordering, category, and active status.
+ */
 @Entity
 @Table(name = "new_life_path_steps")
 public class NewLifePathStep {
