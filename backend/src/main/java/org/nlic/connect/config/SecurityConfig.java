@@ -8,6 +8,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import java.util.List;
 
@@ -36,18 +37,30 @@ public class SecurityConfig {
         // Disable CSRF protection for the development phase.
         http.csrf(csrf -> csrf.disable());
 
-        // Publicly expose the development health and event endpoints.
+        // Configure access rules for NLIC Connect.
         http.authorizeHttpRequests(authorize -> authorize
+
+                // Allow visitors to create member accounts.
                 .requestMatchers(
-                    "/api/health", 
-                    "/api/events",
-                     "/api/events/**",
-                    "/api/prayer-requests",
-                    "/api/prayer-requests/**",
-                    "/api/new-life-path",
-                    "/api/new-life-path/**",
-                    "/api/volunteer/**"
-                    ).permitAll()
+                        HttpMethod.POST,
+                        "/api/auth/register"
+                ).permitAll()
+
+                // Existing development endpoints.
+                // These permissions are temporary and
+                // will be secured during this iteration.
+                .requestMatchers(
+                        "/api/health",
+                        "/api/events",
+                        "/api/events/**",
+                        "/api/prayer-requests",
+                        "/api/prayer-requests/**",
+                        "/api/new-life-path",
+                        "/api/new-life-path/**",
+                        "/api/volunteer/**"
+                ).permitAll()
+
+                // Require authentication for other endpoints.
                 .anyRequest().authenticated()
         );
 
