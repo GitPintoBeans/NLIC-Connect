@@ -14,7 +14,9 @@ function PrayerRequests() {
   const [error, setError] = useState("");
 
   const loadPrayerRequests = () => {
-    fetch("http://localhost:8080/api/prayer-requests")
+    fetch("http://localhost:8080/api/prayer-requests/public", {
+      credentials: "include",
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error("Unable to retrieve prayer requests.");
@@ -53,19 +55,36 @@ function PrayerRequests() {
     setError("");
 
     const requestBody = {
-      userId: 1,
       title: formData.title,
       requestText: formData.requestText,
       privacyLevel: formData.privacyLevel,
     };
 
     try {
+      // Retrieve a CSRF token for the current session.
+      const csrfResponse = await fetch(
+        "http://localhost:8080/api/auth/csrf",
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (!csrfResponse.ok) {
+        throw new Error("Unable to initialize secure submission.");
+      }
+
+      const csrf = await csrfResponse.json();
+
+      // Submit the prayer request as the authenticated member.
       const response = await fetch(
         "http://localhost:8080/api/prayer-requests",
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            [csrf.headerName]: csrf.token,
           },
           body: JSON.stringify(requestBody),
         }
@@ -221,28 +240,21 @@ function PrayerRequests() {
             </div>
           )}
 
-          {!loading &&
-            requests.filter(
-              (request) => request.privacyLevel === "PUBLIC"
-            ).length === 0 && (
-              <div className="prayer-empty">
-                <div className="prayer-symbol">+</div>
+          {!loading && requests.length === 0 && (
+            <div className="prayer-empty">
+              <div className="prayer-symbol">+</div>
 
-                <h3>No public requests yet</h3>
+              <h3>No public requests yet</h3>
 
-                <p>
-                  When community prayer requests are submitted, they
-                  will appear here.
-                </p>
-              </div>
-            )}
+              <p>
+                When community prayer requests are submitted,
+                they will appear here.
+              </p>
+            </div>
+          )}
 
           <div className="prayer-list">
-            {requests
-              .filter(
-                (request) => request.privacyLevel === "PUBLIC"
-              )
-              .map((request) => (
+            {requests.map((request) => (
                 <article
                   className="prayer-card"
                   key={request.prayerRequestId}
