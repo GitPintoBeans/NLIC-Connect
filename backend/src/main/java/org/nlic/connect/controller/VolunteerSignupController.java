@@ -1,83 +1,115 @@
+
 package org.nlic.connect.controller;
 
+import jakarta.validation.Valid;
+
+import org.nlic.connect.dto.VolunteerSignupRequest;
 import org.nlic.connect.model.VolunteerSignup;
 import org.nlic.connect.service.VolunteerSignupService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.core.Authentication;
+
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * REST controller for managing volunteer signups.
- * Handles creating new volunteer registrations and retrieving a user's signup history.
+ * REST controller for volunteer signups in NLIC Connect.
+ *
+ * Supports authenticated member registration,
+ * personal signup history, and administrative access.
+ *
+ * @author James Pinto
  */
 @RestController
 @RequestMapping("/api/volunteer/signups")
-@CrossOrigin(origins = "http://localhost:5173")
 public class VolunteerSignupController {
 
     private final VolunteerSignupService signupService;
 
     /**
-     * Creates a controller backed by the volunteer signup service.
-     *
-     * @param signupService the service used to process volunteer signup operations
+     * Constructor-based dependency injection.
      */
     public VolunteerSignupController(
-            VolunteerSignupService signupService
-    ) {
+            VolunteerSignupService signupService) {
+
         this.signupService = signupService;
     }
 
     /**
-     * Creates a volunteer signup for a user and opportunity.
+     * Registers the authenticated member for a
+     * volunteer opportunity.
      *
-     * @param request a map containing userId, opportunityId, and optional notes
-     * @return an HTTP response containing the created signup, or a validation error message
+     * Member identity is obtained from Spring Security,
+     * not from a user ID supplied by the frontend.
      */
     @PostMapping
     public ResponseEntity<?> createSignup(
-            @RequestBody Map<String, Object> request
-    ) {
+            @Valid @RequestBody VolunteerSignupRequest request,
+            Authentication authentication) {
+
         try {
-            // Parse required identifiers from the incoming JSON request.
-            Long userId =
-                    Long.valueOf(request.get("userId").toString());
-
-            Long opportunityId =
-                    Long.valueOf(request.get("opportunityId").toString());
-
-            // Notes are optional and may be omitted from the request.
-            String notes = request.get("notes") != null
-                    ? request.get("notes").toString()
-                    : null;
-
             VolunteerSignup signup =
-                    signupService.signUp(
-                            userId,
-                            opportunityId,
-                            notes
+                    signupService.signUpCurrentMember(
+                            authentication.getName(),
+                            request.opportunityId(),
+                            request.notes()
                     );
 
-            return ResponseEntity.ok(signup);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(Map.of(
+                            "message",
+                            "Volunteer signup completed successfully.",
+                            "signupId",
+                            signup.getSignupId(),
+                            "opportunityId",
+                            signup.getOpportunityId()
+                    ));
 
-        } catch (IllegalStateException e) {
-            // Surface business validation issues as a 400 response.
-            return ResponseEntity.badRequest()
-                    .body(Map.of("message", e.getMessage()));
+        } catch (IllegalStateException exception) {
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(Map.of(
+                            "message",
+                            exception.getMessage()
+                    ));
         }
     }
 
     /**
-     * Retrieves all signup records associated with a single user.
+     * Retrieves volunteer signup history belonging
+     * to the currently authenticated member.
      *
-     * @param userId the ID of the user whose signups are requested
-     * @return an HTTP response containing the user's signup list
+     * GET /api/volunteer/signups/me
+     */
+    @GetMapping("/me")
+    public ResponseEntity<List<VolunteerSignup>> getMySignups(
+            Authentication authentication) {
+
+        List<VolunteerSignup> signups =
+                signupService.getCurrentMemberSignups(
+                        authentication.getName()
+                );
+
+        return ResponseEntity.ok(signups);
+    }
+
+    /**
+     * Retrieves signup history for a specified user.
+     *
+     * This endpoint must remain restricted to ADMIN
+     * through Spring Security configuration.
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getUserSignups(
-            @PathVariable Long userId
-    ) {
+    public ResponseEntity<List<VolunteerSignup>> getUserSignups(
+            @PathVariable Long userId) {
+
         return ResponseEntity.ok(
                 signupService.getUserSignups(userId)
         );

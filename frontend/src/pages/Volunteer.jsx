@@ -8,9 +8,6 @@ function Volunteer() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  // Temporary development user until authentication is completed.
-  const currentUserId = 1;
-
   useEffect(() => {
     loadVolunteerData();
   }, []);
@@ -20,12 +17,22 @@ function Volunteer() {
       setLoading(true);
       setError("");
 
-      const [opportunitiesResponse, signupsResponse] = await Promise.all([
-        fetch("http://localhost:8080/api/volunteer/opportunities"),
-        fetch(
-          `http://localhost:8080/api/volunteer/signups/user/${currentUserId}`
-        ),
-      ]);
+      const [opportunitiesResponse, signupsResponse] =
+        await Promise.all([
+          fetch(
+            "http://localhost:8080/api/volunteer/opportunities",
+            {
+              credentials: "include",
+            }
+          ),
+
+          fetch(
+            "http://localhost:8080/api/volunteer/signups/me",
+            {
+              credentials: "include",
+            }
+          ),
+        ]);
 
       if (!opportunitiesResponse.ok || !signupsResponse.ok) {
         throw new Error("Unable to load volunteer information.");
@@ -55,15 +62,34 @@ function Volunteer() {
       setMessage("");
       setError("");
 
+      // Retrieve the CSRF token for the current session.
+      const csrfResponse = await fetch(
+        "http://localhost:8080/api/auth/csrf",
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (!csrfResponse.ok) {
+        throw new Error(
+          "Unable to initialize secure volunteer signup."
+        );
+      }
+
+      const csrf = await csrfResponse.json();
+
+      // Register the currently authenticated member.
       const response = await fetch(
         "http://localhost:8080/api/volunteer/signups",
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            [csrf.headerName]: csrf.token,
           },
           body: JSON.stringify({
-            userId: currentUserId,
             opportunityId: opportunity.opportunityId,
             notes: `Signed up through NLIC Connect for ${opportunity.title}`,
           }),
@@ -74,21 +100,30 @@ function Volunteer() {
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Volunteer signup could not be completed."
+          data.message ||
+          "Volunteer signup could not be completed."
         );
       }
 
-      setSignedUpIds((current) => [
-        ...current,
-        opportunity.opportunityId,
-      ]);
+      // Mark the opportunity as joined.
+      setSignedUpIds((current) =>
+        current.includes(opportunity.opportunityId)
+          ? current
+          : [...current, opportunity.opportunityId]
+      );
 
       setMessage(
         `You are now signed up to serve with ${opportunity.title}.`
       );
+
     } catch (err) {
       console.error("Volunteer signup error:", err);
-      setError(err.message);
+
+      setError(
+        err.message ||
+        "Volunteer signup could not be completed."
+      );
+
     } finally {
       setSigningUpId(null);
     }

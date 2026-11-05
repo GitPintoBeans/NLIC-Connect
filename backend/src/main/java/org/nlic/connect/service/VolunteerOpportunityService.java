@@ -1,35 +1,44 @@
+
 package org.nlic.connect.service;
 
 import org.nlic.connect.model.VolunteerOpportunity;
 import org.nlic.connect.repository.VolunteerOpportunityRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Provides business logic for retrieving currently available volunteer opportunities.
+ * Provides business logic for retrieving available
+ * volunteer opportunities in NLIC Connect.
+ *
+ * Only active opportunities with upcoming start dates
+ * are displayed to members.
+ *
+ * @author James Pinto
  */
 @Service
 public class VolunteerOpportunityService {
 
     private final VolunteerOpportunityRepository repository;
 
-    /**
-     * Creates the service with the volunteer opportunity repository.
-     *
-     * @param repository the repository used to query opportunities
-     */
     public VolunteerOpportunityService(
             VolunteerOpportunityRepository repository) {
+
         this.repository = repository;
     }
 
     /**
-     * Retrieves all active opportunities sorted by their upcoming start date.
+     * Retrieves active volunteer opportunities
+     * scheduled to begin in the future.
      *
-     * @return the list of active volunteer opportunities
+     * @return upcoming opportunities sorted by start date
      */
     public List<VolunteerOpportunity> getActiveOpportunities() {
-        return repository.findByActiveTrueOrderByStartDateAsc();
+
+        return repository
+                .findByActiveTrueAndStartDateAfterOrderByStartDateAsc(
+                        LocalDateTime.now()
+                );
     }
 }

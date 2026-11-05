@@ -110,13 +110,33 @@ public class SecurityConfig {
                         "/api/prayer-requests"
                 ).authenticated()
 
-                // Temporarily restrict member-specific
-                // progress and signup endpoints until
-                // ownership validation is implemented.
+                // Authenticated members can view
+                // their own volunteer signup history.
                 .requestMatchers(
-                        "/api/new-life-path/progress/**",
+                        HttpMethod.GET,
+                        "/api/volunteer/signups/me"
+                ).authenticated()
+
+                // Authenticated members can register
+                // themselves for volunteer opportunities.
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/volunteer/signups"
+                ).authenticated()
+
+                // Access to another member's signup
+                // history is restricted to administrators.
+                .requestMatchers(
                         "/api/volunteer/signups/**"
                 ).hasRole("ADMIN")
+
+                // New Life Path progress remains
+                // restricted until ownership checks
+                // are implemented.
+                .requestMatchers(
+                        "/api/new-life-path/progress/**"
+                ).hasRole("ADMIN")
+
 
                 // All remaining requests require login.
                 .anyRequest().authenticated()
