@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 /**
  * Member login page for NLIC Connect.
@@ -154,6 +154,11 @@ function Login() {
           {loading ? "Signing In..." : "Sign In"}
         </button>
       </form>
+
+      <p style={{ marginTop: "24px" }}>
+        New to NLIC Connect?{" "}
+        <Link to="/register">Create an Account</Link>
+      </p>
     </main>
   );
 }
