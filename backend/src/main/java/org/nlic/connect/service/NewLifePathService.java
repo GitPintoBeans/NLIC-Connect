@@ -1,66 +1,119 @@
+
 package org.nlic.connect.service;
 
 import org.nlic.connect.model.NewLifePathProgress;
 import org.nlic.connect.model.NewLifePathStep;
+import org.nlic.connect.model.User;
+
 import org.nlic.connect.repository.NewLifePathProgressRepository;
 import org.nlic.connect.repository.NewLifePathStepRepository;
+import org.nlic.connect.repository.UserRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Provides business logic for managing New Life Path steps and user progress.
+ * Provides business logic for managing New Life Path
+ * steps and authenticated member progress.
+ *
+ * @author James Pinto
  */
 @Service
 public class NewLifePathService {
 
     private final NewLifePathStepRepository stepRepository;
     private final NewLifePathProgressRepository progressRepository;
+    private final UserRepository userRepository;
 
     /**
-     * Creates the service with the required step and progress repositories.
-     *
-     * @param stepRepository repository used to manage New Life Path steps
-     * @param progressRepository repository used to track user progress
+     * Constructor-based dependency injection.
      */
     public NewLifePathService(
             NewLifePathStepRepository stepRepository,
-            NewLifePathProgressRepository progressRepository) {
+            NewLifePathProgressRepository progressRepository,
+            UserRepository userRepository) {
 
         this.stepRepository = stepRepository;
         this.progressRepository = progressRepository;
+        this.userRepository = userRepository;
     }
 
     /**
-     * Retrieves all active steps in their configured order.
-     *
-     * @return the available active steps
+     * Retrieves all active New Life Path steps
+     * in their configured order.
      */
     public List<NewLifePathStep> getActiveSteps() {
+
         return stepRepository.findByActiveTrueOrderByStepOrderAsc();
     }
 
     /**
-     * Retrieves the progress history for a specific user.
+     * Resolves the authenticated member's database ID
+     * using the email verified by Spring Security.
+     */
+    private Long getAuthenticatedUserId(
+            String authenticatedEmail) {
+
+        User member = userRepository
+                .findByEmail(authenticatedEmail)
+                .orElseThrow(() ->
+                        new IllegalStateException(
+                                "Authenticated member account not found."
+                        )
+                );
+
+        return member.getUserId();
+    }
+
+    /**
+     * Retrieves progress belonging to the
+     * currently authenticated member.
+     */
+    public List<NewLifePathProgress> getCurrentMemberProgress(
+            String authenticatedEmail) {
+
+        Long userId = getAuthenticatedUserId(authenticatedEmail);
+
+        return getUserProgress(userId);
+    }
+
+    /**
+     * Marks a step complete for the authenticated member.
      *
-     * @param userId the identifier of the user
-     * @return the user's New Life Path progress entries
+     * The frontend cannot select another member's ID.
+     */
+    public NewLifePathProgress completeCurrentMemberStep(
+            String authenticatedEmail,
+            Long stepId) {
+
+        Long userId = getAuthenticatedUserId(authenticatedEmail);
+
+        return completeStep(userId, stepId);
+    }
+
+    /**
+     * Retrieves progress history for a specified user.
+     *
+     * Retained for authorized administrative operations.
      */
     public List<NewLifePathProgress> getUserProgress(Long userId) {
+
         return progressRepository.findByUserId(userId);
     }
 
     /**
-     * Marks a step as completed for the given user.
+     * Marks a specified user's step as completed.
      *
-     * @param userId the identifier of the user
-     * @param stepId the identifier of the step to complete
-     * @return the saved progress record showing completion
+     * Verifies that the step exists and reuses
+     * an existing progress record when available.
      */
-    public NewLifePathProgress completeStep(Long userId, Long stepId) {
+    public NewLifePathProgress completeStep(
+            Long userId,
+            Long stepId) {
 
-        // Verify that the requested step actually exists.
+        // Verify that the requested step exists.
         stepRepository.findById(stepId)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
@@ -68,10 +121,12 @@ public class NewLifePathService {
                         )
                 );
 
+        // Retrieve existing progress or create a new record.
         NewLifePathProgress progress =
                 progressRepository
                         .findByUserIdAndStepId(userId, stepId)
                         .orElseGet(() -> {
+
                             NewLifePathProgress newProgress =
                                     new NewLifePathProgress();
 
@@ -81,9 +136,16 @@ public class NewLifePathService {
                             return newProgress;
                         });
 
+        // Do not reset the original completion date
+        // if the member has already completed this step.
+        if ("COMPLETED".equals(progress.getStatus())) {
+            return progress;
+        }
+
         progress.setStatus("COMPLETED");
         progress.setCompletedDate(LocalDate.now());
 
+        // Persist progress in MySQL.
         return progressRepository.save(progress);
     }
 }

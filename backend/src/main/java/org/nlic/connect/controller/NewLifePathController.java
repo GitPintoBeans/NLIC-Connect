@@ -1,17 +1,21 @@
+
 package org.nlic.connect.controller;
 
 import org.nlic.connect.model.NewLifePathProgress;
 import org.nlic.connect.model.NewLifePathStep;
 import org.nlic.connect.service.NewLifePathService;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
- * REST controller for managing New Life Path steps and user progress.
- * Exposes endpoints for retrieving active steps, viewing a user's progress,
- * and marking a step as completed.
+ * REST controller for managing New Life Path
+ * steps and authenticated member progress.
+ *
+ * @author James Pinto
  */
 @RestController
 @RequestMapping("/api/new-life-path")
@@ -20,30 +24,63 @@ public class NewLifePathController {
     private final NewLifePathService newLifePathService;
 
     /**
-     * Creates a controller backed by the supplied New Life Path service.
-     *
-     * @param newLifePathService the service used to manage steps and progress
+     * Constructor-based dependency injection.
      */
     public NewLifePathController(
             NewLifePathService newLifePathService) {
+
         this.newLifePathService = newLifePathService;
     }
 
     /**
-     * Retrieves all currently active New Life Path steps.
-     *
-     * @return the list of active steps available to users
+     * Retrieves all currently active
+     * New Life Path steps.
      */
     @GetMapping("/steps")
     public List<NewLifePathStep> getSteps() {
+
         return newLifePathService.getActiveSteps();
     }
 
     /**
-     * Retrieves the progress record for a specific user.
+     * Retrieves progress belonging to the
+     * currently authenticated member.
      *
-     * @param userId the identifier of the user whose progress is requested
-     * @return the list of progress entries for the specified user
+     * GET /api/new-life-path/progress/me
+     */
+    @GetMapping("/progress/me")
+    public List<NewLifePathProgress> getMyProgress(
+            Authentication authentication) {
+
+        return newLifePathService.getCurrentMemberProgress(
+                authentication.getName()
+        );
+    }
+
+    /**
+     * Marks a step complete for the
+     * currently authenticated member.
+     *
+     * POST /api/new-life-path/progress/me/{stepId}/complete
+     */
+    @PostMapping("/progress/me/{stepId}/complete")
+    public ResponseEntity<NewLifePathProgress> completeMyStep(
+            @PathVariable Long stepId,
+            Authentication authentication) {
+
+        NewLifePathProgress progress =
+                newLifePathService.completeCurrentMemberStep(
+                        authentication.getName(),
+                        stepId
+                );
+
+        return ResponseEntity.ok(progress);
+    }
+
+    /**
+     * Retrieves progress for a specified user.
+     *
+     * Restricted to ADMIN through SecurityConfig.
      */
     @GetMapping("/progress/{userId}")
     public List<NewLifePathProgress> getProgress(
@@ -53,11 +90,9 @@ public class NewLifePathController {
     }
 
     /**
-     * Marks a specific New Life Path step as complete for a user.
+     * Marks a step complete for a specified user.
      *
-     * @param userId the identifier of the user completing the step
-     * @param stepId the identifier of the step to mark complete
-     * @return a response containing the updated progress entry
+     * Restricted to ADMIN through SecurityConfig.
      */
     @PostMapping("/progress/{userId}/{stepId}/complete")
     public ResponseEntity<NewLifePathProgress> completeStep(

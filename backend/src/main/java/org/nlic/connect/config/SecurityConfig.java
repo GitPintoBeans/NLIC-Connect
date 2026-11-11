@@ -130,13 +130,25 @@ public class SecurityConfig {
                         "/api/volunteer/signups/**"
                 ).hasRole("ADMIN")
 
-                // New Life Path progress remains
-                // restricted until ownership checks
-                // are implemented.
+                // Authenticated members can view
+                // their own New Life Path progress.
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/new-life-path/progress/me"
+                ).authenticated()
+
+                // Authenticated members can complete
+                // steps in their own discipleship journey.
+                .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/new-life-path/progress/me/*/complete"
+                ).authenticated()
+
+                // Access to another member's progress
+                // remains restricted to administrators.
                 .requestMatchers(
                         "/api/new-life-path/progress/**"
                 ).hasRole("ADMIN")
-
 
                 // All remaining requests require login.
                 .anyRequest().authenticated()

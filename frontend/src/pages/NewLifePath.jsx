@@ -7,9 +7,6 @@ function NewLifePath() {
   const [error, setError] = useState("");
   const [updatingStep, setUpdatingStep] = useState(null);
 
-  // Temporary until authentication is connected.
-  const currentUserId = 1;
-
   useEffect(() => {
     loadNewLifePath();
   }, []);
@@ -19,12 +16,22 @@ function NewLifePath() {
       setLoading(true);
       setError("");
 
-      const [stepsResponse, progressResponse] = await Promise.all([
-        fetch("http://localhost:8080/api/new-life-path/steps"),
-        fetch(
-          `http://localhost:8080/api/new-life-path/progress/${currentUserId}`
-        ),
-      ]);
+      const [stepsResponse, progressResponse] =
+        await Promise.all([
+          fetch(
+            "http://localhost:8080/api/new-life-path/steps",
+            {
+              credentials: "include",
+            }
+          ),
+
+          fetch(
+            "http://localhost:8080/api/new-life-path/progress/me",
+            {
+              credentials: "include",
+            }
+          ),
+        ]);
 
       if (!stepsResponse.ok || !progressResponse.ok) {
         throw new Error("Unable to load New Life Path.");
@@ -56,10 +63,32 @@ function NewLifePath() {
       setUpdatingStep(stepId);
       setError("");
 
+      // Retrieve a CSRF token for the current session.
+      const csrfResponse = await fetch(
+        "http://localhost:8080/api/auth/csrf",
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (!csrfResponse.ok) {
+        throw new Error(
+          "Unable to initialize secure progress update."
+        );
+      }
+
+      const csrf = await csrfResponse.json();
+
+      // Complete the step for the authenticated member.
       const response = await fetch(
-        `http://localhost:8080/api/new-life-path/progress/${currentUserId}/${stepId}/complete`,
+        `http://localhost:8080/api/new-life-path/progress/me/${stepId}/complete`,
         {
           method: "POST",
+          credentials: "include",
+          headers: {
+            [csrf.headerName]: csrf.token,
+          },
         }
       );
 
@@ -69,6 +98,7 @@ function NewLifePath() {
 
       const savedProgress = await response.json();
 
+      // Update the member's progress on the page.
       setProgress((currentProgress) => {
         const existingIndex = currentProgress.findIndex(
           (item) => item.stepId === stepId
@@ -82,9 +112,11 @@ function NewLifePath() {
 
         return [...currentProgress, savedProgress];
       });
+
     } catch (err) {
-      console.error(err);
+      console.error("New Life Path progress error:", err);
       setError("Your progress could not be updated.");
+
     } finally {
       setUpdatingStep(null);
     }
