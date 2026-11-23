@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
+import ManageEvents from "./pages/ManageEvents";
 import PrayerRequests from "./pages/PrayerRequests";
 import Volunteer from "./pages/Volunteer";
 import NewLifePath from "./pages/NewLifePath";
@@ -37,6 +38,7 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/manage/events" element={<ManageEvents />} />
             <Route path="/prayer" element={<PrayerRequests />} />
             <Route path="/volunteer" element={<Volunteer />} />
             <Route

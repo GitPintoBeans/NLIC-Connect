@@ -1,0 +1,25 @@
+.manage-events { background: #f7f6f2; color: #141414; min-height: 80vh; padding: 42px max(22px, calc((100% - 1100px) / 2)); }
+.manage-events-header { margin-bottom: 28px; }
+.manage-events-header h1 { font-family: Georgia, serif; font-size: 2rem; margin: 8px 0; }
+.manage-events-header p { line-height: 1.5; }
+.manage-eyebrow { color: #ad7b15; font-size: .75rem; font-weight: 700; letter-spacing: .12em; }
+.manage-panel { background: white; border: 1px solid #dedbd4; border-top: 4px solid #c99528; border-radius: 7px; padding: 24px; margin-bottom: 22px; box-shadow: 0 4px 15px #0000000d; }
+.manage-panel h2 { font-family: Georgia, serif; font-size: 1.4rem; margin: 0 0 18px; }
+.manage-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.manage-form label { display: flex; flex-direction: column; gap: 7px; font-size: .85rem; font-weight: 650; }
+.manage-form input:not([type=checkbox]), .manage-form textarea { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #b6b6b6; border-radius: 4px; font: inherit; background: white; color: #222; }
+.manage-form input:focus-visible, .manage-form textarea:focus-visible { outline: 3px solid #dba53d; outline-offset: 1px; }
+.manage-form .manage-full-width, .manage-actions { grid-column: 1 / -1; }
+.manage-form .manage-checkbox { flex-direction: row; align-items: center; }
+.manage-actions, .manage-row-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.manage-events button { border: 1px solid #b5a17c; border-radius: 4px; padding: 9px 12px; cursor: pointer; background: white; color: #161616; font-weight: 650; }
+.manage-events button.manage-primary { background: #c99528; border-color: #c99528; }
+.manage-events button:disabled { opacity: .6; cursor: not-allowed; }
+.manage-table-wrap { overflow-x: auto; }
+.manage-table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+.manage-table th, .manage-table td { text-align: left; border-bottom: 1px solid #dedbd4; padding: 12px 10px; }
+.manage-table th { background: #f5f1e9; }
+.manage-notice { padding: 12px; background: white; border: 1px solid #d6c7a7; margin-bottom: 15px; }
+.manage-error { color: #a21818; border-color: #e59b9b; }
+.manage-success { color: #265c29; border-color: #9bbd99; }
+@media (max-width: 740px) { .manage-events { padding: 20px 14px; } .manage-form { grid-template-columns: 1fr; } .manage-panel { padding: 16px; } }

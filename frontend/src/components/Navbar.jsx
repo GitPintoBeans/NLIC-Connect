@@ -167,6 +167,12 @@ function Navbar() {
         <NavLink to="/new-life-path" className={getLinkClass}>
           NEW LIFE PATH
         </NavLink>
+
+        {member?.roles?.some((role) => ["ROLE_ADMIN", "ROLE_LEADER"].includes(role)) && (
+          <NavLink to="/manage/events" className={getLinkClass}>
+            MANAGE EVENTS
+          </NavLink>
+        )}
       </nav>
 
       <div className="member-badge">

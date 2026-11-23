@@ -82,13 +82,6 @@ public class SecurityConfig {
                         "/api/events/**"
                 ).permitAll()
 
-                // Event creation requires leadership access.
-                .requestMatchers(
-                        HttpMethod.POST,
-                        "/api/events",
-                        "/api/events/**"
-                ).hasAnyRole("ADMIN", "LEADER")
-
                 // Authenticated members can view public
                 // prayer requests on the Community Prayer Wall.
                 .requestMatchers(
@@ -149,6 +142,26 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/api/new-life-path/progress/**"
                 ).hasRole("ADMIN")
+
+                // Iteration 3: only leaders can list all event registrants.
+                .requestMatchers(HttpMethod.GET,
+                        "/api/event-registrations/event/*")
+                    .hasAnyRole("ADMIN", "LEADER")
+
+                // A member can see and manage only their own RSVPs.
+                .requestMatchers(HttpMethod.GET,
+                        "/api/event-registrations/me").authenticated()
+                .requestMatchers(HttpMethod.POST,
+                        "/api/event-registrations").authenticated()
+                .requestMatchers(HttpMethod.DELETE,
+                        "/api/event-registrations/*").authenticated()
+
+                // Deny any other registration paths by default.
+                .requestMatchers("/api/event-registrations/**").denyAll()
+
+                // Leader/admin event management; checked by Spring Security.
+                .requestMatchers("/api/admin/events", "/api/admin/events/**")
+                    .hasAnyRole("ADMIN", "LEADER")
 
                 // All remaining requests require login.
                 .anyRequest().authenticated()

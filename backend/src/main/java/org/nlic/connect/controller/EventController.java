@@ -1,6 +1,5 @@
 package org.nlic.connect.controller;
 
-import jakarta.validation.Valid;
 import org.nlic.connect.model.Event;
 import org.nlic.connect.service.EventService;
 import org.springframework.http.ResponseEntity;
@@ -51,14 +50,5 @@ public class EventController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * Creates a new church event.
-     *
-     * @param event event information supplied by the client
-     * @return newly persisted event
-     */
-    @PostMapping
-    public Event createEvent(@Valid @RequestBody Event event) {
-        return eventService.saveEvent(event);
-    }
+    // Event writes now use the validated, role-protected /api/admin/events API.
 }
