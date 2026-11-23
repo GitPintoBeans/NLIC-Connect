@@ -32,4 +32,5 @@ public interface VolunteerOpportunityRepository
             LocalDateTime currentDateTime
         );
 
+    long countByActiveTrueAndStartDateAfter(LocalDateTime now);
 }

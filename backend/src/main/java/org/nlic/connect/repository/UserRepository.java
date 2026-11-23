@@ -30,4 +30,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return true if the email already exists
      */
     boolean existsByEmail(String email);
+
+    /** Count accounts not disabled by administrators. */
+    long countByActiveTrue();
 }

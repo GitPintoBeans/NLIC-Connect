@@ -168,6 +168,12 @@ function Navbar() {
           NEW LIFE PATH
         </NavLink>
 
+        {member?.roles?.includes("ROLE_ADMIN") && (
+          <NavLink to="/admin/dashboard" className={getLinkClass}>
+            ADMIN DASHBOARD
+          </NavLink>
+        )}
+
         {member?.roles?.some((role) => ["ROLE_ADMIN", "ROLE_LEADER"].includes(role)) && (
           <NavLink to="/manage/events" className={getLinkClass}>
             MANAGE EVENTS

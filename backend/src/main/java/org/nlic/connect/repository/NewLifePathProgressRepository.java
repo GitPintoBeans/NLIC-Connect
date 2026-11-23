@@ -2,6 +2,8 @@ package org.nlic.connect.repository;
 
 import org.nlic.connect.model.NewLifePathProgress;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,4 +33,7 @@ public interface NewLifePathProgressRepository
             Long userId,
             Long stepId
     );
+
+    @Query(value = "select count(distinct p.user_id) from new_life_path_progress p join users u on u.user_id = p.user_id where p.status = :status and u.is_active = 1", nativeQuery = true)
+    long countDistinctActiveUsersByStatus(@Param("status") String status);
 }

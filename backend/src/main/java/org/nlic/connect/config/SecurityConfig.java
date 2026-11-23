@@ -159,6 +159,10 @@ public class SecurityConfig {
                 // Deny any other registration paths by default.
                 .requestMatchers("/api/event-registrations/**").denyAll()
 
+                // Aggregate dashboard reports are restricted to administrators.
+                .requestMatchers("/api/admin/dashboard", "/api/admin/dashboard/**")
+                    .hasRole("ADMIN")
+
                 // Leader/admin event management; checked by Spring Security.
                 .requestMatchers("/api/admin/events", "/api/admin/events/**")
                     .hasAnyRole("ADMIN", "LEADER")

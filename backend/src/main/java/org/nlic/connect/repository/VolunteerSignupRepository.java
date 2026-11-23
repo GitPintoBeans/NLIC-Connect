@@ -32,4 +32,6 @@ public interface VolunteerSignupRepository
             Long opportunityId,
             String status
     );
+
+    long countByStatus(String status);
 }

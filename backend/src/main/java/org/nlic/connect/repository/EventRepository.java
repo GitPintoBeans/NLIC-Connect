@@ -28,4 +28,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from Event e where e.eventId = :eventId")
     java.util.Optional<Event> findByIdForUpdate(@Param("eventId") Long eventId);
+
+    long countByEventDateAfter(java.time.LocalDateTime now);
+    List<Event> findTop5ByEventDateAfterOrderByEventDateAsc(java.time.LocalDateTime now);
 }

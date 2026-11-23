@@ -36,4 +36,7 @@ public interface PrayerRequestRepository
             String privacyLevel,
             String status
         );
+
+    /** Read-only active prayer count used for aggregate dashboard reporting. */
+    long countByStatus(String status);
 }

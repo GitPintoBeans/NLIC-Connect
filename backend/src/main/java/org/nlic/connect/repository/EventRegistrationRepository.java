@@ -14,4 +14,7 @@ public interface EventRegistrationRepository extends JpaRepository<EventRegistra
     long countByEventIdAndStatus(Long eventId, String status);
     /** Includes active and cancelled RSVPs to preserve history on deletion. */
     long countByEventId(Long eventId);
+
+    /** Counts all currently registered RSVPs, including historical event dates. */
+    long countByStatus(String status);
 }

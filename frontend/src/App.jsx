@@ -7,11 +7,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
 import ManageEvents from "./pages/ManageEvents";
+import AdminDashboard from "./pages/AdminDashboard";
 import PrayerRequests from "./pages/PrayerRequests";
 import Volunteer from "./pages/Volunteer";
 import NewLifePath from "./pages/NewLifePath";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import AuthPortal from "./pages/AuthPortal";
 
 import "./App.css";
 
@@ -28,8 +28,8 @@ function App() {
       <Routes>
 
         {/* Public authentication pages */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<AuthPortal />} />
+        <Route path="/register" element={<AuthPortal />} />
 
         {/* Authentication required */}
         <Route element={<ProtectedRoute />}>
@@ -39,6 +39,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/events" element={<Events />} />
             <Route path="/manage/events" element={<ManageEvents />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/prayer" element={<PrayerRequests />} />
             <Route path="/volunteer" element={<Volunteer />} />
             <Route
